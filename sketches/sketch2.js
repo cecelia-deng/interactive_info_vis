@@ -8,40 +8,68 @@ registerSketch('sk2', function (p) {
   p.draw = function () {
     let hr = p.hour();
     let mn = p.minute();
-    let sc = p.second();
 
-    // background gradient
+    // ----- Background: soft gradient changes with time -----
     let morning = p.color(180, 210, 255);
-    let night = p.color(120, 140, 200);
-    let t = p.map(hr, 0, 23, 0, 1);
-    let bg = p.lerpColor(morning, night, t);
-    p.background(bg);
+    let noon = p.color(220, 190, 250);
+    let night = p.color(100, 120, 180);
 
-    // breathing animation
-    let cycle = 6000;
+    let tDay = p.map(hr, 0, 23, 0, 1);
+    let bgColor = tDay < 0.5 ? p.lerpColor(morning, noon, tDay * 2)
+                             : p.lerpColor(noon, night, (tDay - 0.5) * 2);
+    p.background(bgColor);
+
+    // ----- Breathing timing -----
+    let cycle = 6000; 
     let phase = (p.millis() % cycle) / cycle;
-    let ease = (1 - p.cos(phase * p.TWO_PI)) / 2;
-    let inhale = phase < 0.5;
+    let ease = (1 - p.cos(phase * p.TWO_PI)) / 2; 
+
+    let inhale = phase < 0.5; // first half inhale, second exhale
     let label = inhale ? "Inhale" : "Exhale";
 
-    let radius = p.lerp(80, 140, ease);
-    let cx = p.width / 2;
-    let cy = p.height / 2;
+    let offsetY = 10 * p.sin(p.millis() / 2000);
 
-    // main circle
+    let baseRadius = 130;
+    let radius = p.lerp(baseRadius * 0.7, baseRadius * 1.2, ease);
+
+    let cx = p.width / 2;
+    let cy = p.height / 2 + offsetY;
+
+    // outer soft glow
     p.noStroke();
-    p.fill(255, 230);
+    p.fill(255, 255, 255, 40);
+    p.ellipse(cx, cy, radius * 2.6);
+
+    // inner main circle
+    p.fill(255, 255, 255, 220);
     p.ellipse(cx, cy, radius * 2);
 
-    // time text
-    p.fill(80);
-    p.textAlign(p.CENTER, p.CENTER);
-    p.textSize(40);
-    p.text(`${p.nf(hr,2)}:${p.nf(mn,2)}:${p.nf(sc,2)}`, cx, cy - 10);
+    // ----- Time text -----
+    let h = p.nf(hr, 2);
+    let m = p.nf(mn, 2);
+    let s = p.nf(p.second(), 2);
 
-    // inhale/exhale label
+    // breathing alpha pulse
+    let alpha = 150 + 50 * p.sin(p.millis() / 1500);
+
+    p.fill(100, alpha);
+    p.textAlign(p.CENTER, p.CENTER);
+    p.textSize(48);
+    p.text(`${h}:${m}:${s}`, cx, cy - 10);
+
+    // inhale / exhale label
     p.textSize(22);
-    p.text(label, cx, cy + 40);
+    p.fill(120, 120);
+    p.text(label, cx, cy + 45);
+
+    // ----- Footer -----
+    p.textSize(18);
+    p.fill(60);
+    p.text('Breathing Clock', p.width / 2, p.height - 20);
+  };
+
+  p.windowResized = function () {
+    p.resizeCanvas(p.windowWidth, p.windowHeight);
   };
 });
 
