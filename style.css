@@ -51,7 +51,18 @@ canvas {
 }
 
 .sketch-container canvas {
-  max-width: 100%;
-  height: auto;
   display: block;
+  margin: 0 auto;          
+  width: 1000px;           
+  height: auto;
+  border-radius: 12px;   
+}
+
+.sketch-evolution img {
+  width: 250px;  
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  display: block;
+  margin: 8px auto; 
 }
