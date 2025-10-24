@@ -1,6 +1,5 @@
 // Instance-mode sketch for tab 2
 // Breathing Clock
-
 registerSketch('sk2', function (p) {
   let slowMode = false;
 
@@ -17,18 +16,15 @@ registerSketch('sk2', function (p) {
     let hr = p.hour();
     let mn = p.minute();
 
-    // ----- Background: simple gradient changes with time -----
-    let morning = p.color(180, 210, 255);
-    let noon = p.color(220, 190, 250);
-    let night = p.color(100, 120, 180);
-
-    let tDay = p.map(hr, 0, 23, 0, 1);
-    let bgColor = tDay < 0.5 ? p.lerpColor(morning, noon, tDay * 2)
-                             : p.lerpColor(noon, night, (tDay - 0.5) * 2);
-    p.background(bgColor);
+    // ----- Background hue flow -----
+    let dayProgress = (hr * 60 + mn) / (24 * 60);
+    let hueShift = p.map(dayProgress, 0, 1, 0, 360);
+    p.colorMode(p.HSB, 360, 100, 100);
+    p.background((hueShift + 180) % 360, 40, 90);
+    p.colorMode(p.RGB, 255);
 
     // ----- Breathing timing -----
-    let cycle = slowMode ? 9000 : 6000; // slower pace toggle
+    let cycle = slowMode ? 9000 : 6000;
     let phase = (p.millis() % cycle) / cycle;
     let ease = (1 - p.cos(phase * p.TWO_PI)) / 2;
 
@@ -38,18 +34,20 @@ registerSketch('sk2', function (p) {
     let offsetY = 10 * p.sin(p.millis() / 2000);
     let baseRadius = 130;
     let radius = p.lerp(baseRadius * 0.7, baseRadius * 1.2, ease);
-
     let cx = p.width / 2;
     let cy = p.height / 2 + offsetY;
 
-    // ----- Pulsing glow (new) -----
+    // ----- Pulsing glow -----
     let glowAlpha = 50 + 30 * p.sin(p.millis() / 1000);
     p.noStroke();
     p.fill(255, 255, 255, glowAlpha);
     p.ellipse(cx, cy, radius * 2.6);
 
-    // main circle
-    p.fill(255, 255, 255, 220);
+    // ----- Blue-gray breathing color transition -----
+    let inhaleColor = p.color(250, 230, 255, 230); // warm pinkish white
+    let exhaleColor = p.color(230, 210, 245, 200); // softer lavender tone
+    let currentColor = p.lerpColor(exhaleColor, inhaleColor, ease);
+    p.fill(currentColor);
     p.ellipse(cx, cy, radius * 2);
 
     // ----- Time text -----
@@ -67,12 +65,10 @@ registerSketch('sk2', function (p) {
     p.fill(120, 120);
     p.text(label, cx, cy + 45);
 
-    // footer
+    // footer + hint
     p.textSize(18);
     p.fill(60);
     p.text("Breathing Clock", p.width / 2, p.height - 20);
-
-    // interaction hint
     p.textSize(14);
     p.fill(80);
     p.text("(click to change breathing pace)", p.width / 2, p.height - 40);
@@ -82,6 +78,8 @@ registerSketch('sk2', function (p) {
     p.resizeCanvas(p.windowWidth, p.windowHeight);
   };
 });
+
+
 
 
 
