@@ -1,5 +1,5 @@
 // Instance-mode sketch for tab 2
-// Breathing Clock — Gradient Background + Smooth Flow
+// Breathing Clock — Smooth Flow + Gradient Background
 registerSketch('sk2', function (p) {
   p.setup = function () {
     p.createCanvas(600, 600);
@@ -29,5 +29,6 @@ registerSketch('sk2', function (p) {
     p.ellipse(cx, cy, radius * 2);
   };
 });
+
 
 
