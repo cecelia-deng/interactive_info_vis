@@ -53,10 +53,11 @@ canvas {
 .sketch-container canvas {
   display: block;
   margin: 0 auto;          
-  width: 1000px;           
+  max-width: 100%;
   height: auto;
   border-radius: 12px;   
 }
+
 
 .sketch-evolution img {
   width: 250px;  
