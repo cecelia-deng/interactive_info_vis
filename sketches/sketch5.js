@@ -3,28 +3,28 @@ registerSketch('sk5', function (p) {
   let mapImg;
   let points = [];
   let hoverIndex = -1;
+  let heatmapLayer;
 
   p.preload = function () {
-    // 注意路径：sketches 下的文件要 ../assets/
     table = p.loadTable('../assets/seoul_starbucks.csv', 'csv', 'header');
   };
 
   p.setup = function () {
     p.createCanvas(800, 800);
-    p.imageMode(p.CENTER);
     p.textAlign(p.CENTER, p.CENTER);
     p.textSize(14);
 
-    // ✅ 加载 SVG 地图
+    // 🔥 创建独立的热力图图层
+    heatmapLayer = p.createGraphics(800, 800);
+
     mapImg = p.createImg('../assets/Seoul_districts.svg', 'Seoul Map');
     mapImg.size(750, 750);
 
-    // ⚙️ 计算 SVG 相对 canvas 的正确位置
     const canvasElt = p.canvas;
     const canvasX = canvasElt.offsetLeft;
     const canvasY = canvasElt.offsetTop;
     mapImg.position(canvasX + p.width / 2 - 375, canvasY + p.height / 2 - 375);
-    mapImg.style('z-index', '-1'); // ✅ 放到后面
+    mapImg.style('z-index', '-1');
 
     // ☕ 从 CSV 读取数据
     for (let r = 0; r < table.getRowCount(); r++) {
@@ -32,7 +32,6 @@ registerSketch('sk5', function (p) {
       const lon = table.getNum(r, 'Longitude');
       const name = table.getString(r, 'Store Name');
 
-      // 经纬度 → 坐标（调试版）
       let x = p.map(lon, 126.8, 127.18, 100, 700);
       let y = p.map(lat, 37.44, 37.68, 700, 100);
 
@@ -40,19 +39,65 @@ registerSketch('sk5', function (p) {
       y += p.random(-2, 2);
       points.push({ x, y, name });
     }
+
+    // 🔥 预计算每个点的密度
+    for (let i = 0; i < points.length; i++) {
+      let density = 0;
+      for (let j = 0; j < points.length; j++) {
+        let d = p.dist(points[i].x, points[i].y, points[j].x, points[j].y);
+        if (d < 60) {
+          density++;
+        }
+      }
+      points[i].density = density;
+    }
+
+    // 🔥 在 setup 中绘制热力图
+    drawHeatmap();
   };
 
-  p.draw = function () {
-    p.clear(); // ✅ 保持 SVG 可见
+  function drawHeatmap() {
+    heatmapLayer.clear();
+    heatmapLayer.noStroke();
+    
+    for (let i = 0; i < points.length; i++) {
+      const pt = points[i];
+      
+      if (pt.density > 3) {
+        let hue = p.map(pt.density, 3, 20, 60, 0);
+        let alpha = p.map(pt.density, 3, 20, 100, 220);
+        
+        heatmapLayer.colorMode(p.HSB);
+        heatmapLayer.fill(hue, 90, 100, alpha);
+        heatmapLayer.noStroke();
+        heatmapLayer.circle(pt.x, pt.y, 30);
+        heatmapLayer.colorMode(p.RGB);
+      }
+    }
+    
+    // ✨ 应用模糊滤镜
+    heatmapLayer.filter(p.BLUR, 12);
+  }
 
-    // ☕ 绘制所有门店
+  p.draw = function () {
+    p.clear();
+
+    // 🔥 绘制热力图层（设置透明度并正确定位）
+    p.push();
+    p.tint(255, 150); // ✅ 透明度 150/255 ≈ 60%
+    p.imageMode(p.CORNER); // ✅ 改为 CORNER 模式
+    p.image(heatmapLayer, 0, 0); // ✅ 从 (0,0) 开始绘制
+    p.pop();
+
+    // ☕ 绘制咖啡杯图标
     p.textSize(14);
+    p.fill(0);
     for (let i = 0; i < points.length; i++) {
       const pt = points[i];
       p.text('☕', pt.x, pt.y);
     }
 
-    // hover 检测
+    // 🎯 hover 检测和 tooltip
     hoverIndex = -1;
     for (let i = 0; i < points.length; i++) {
       const pt = points[i];
@@ -62,7 +107,6 @@ registerSketch('sk5', function (p) {
       }
     }
 
-    // tooltip
     if (hoverIndex !== -1) {
       const pt = points[hoverIndex];
       p.fill(255, 250);
@@ -77,7 +121,7 @@ registerSketch('sk5', function (p) {
       p.text(pt.name, pt.x, pt.y - 20);
     }
 
-    // title + 标签
+    // 📝 标题和标签
     p.fill(0);
     p.noStroke();
     p.textSize(18);
@@ -88,7 +132,6 @@ registerSketch('sk5', function (p) {
     p.text('Gangnam', 600, 600);
   };
 
-  // 🔁 处理窗口变化（保持地图对齐）
   p.windowResized = function () {
     const canvasElt = p.canvas;
     const canvasX = canvasElt.offsetLeft;
