@@ -14,7 +14,6 @@ registerSketch('sk5', function (p) {
     p.textAlign(p.CENTER, p.CENTER);
     p.textSize(14);
 
-    // 🔥 创建独立的热力图图层
     heatmapLayer = p.createGraphics(800, 800);
 
     mapImg = p.createImg('../assets/Seoul_districts.svg', 'Seoul Map');
@@ -26,7 +25,7 @@ registerSketch('sk5', function (p) {
     mapImg.position(canvasX + p.width / 2 - 375, canvasY + p.height / 2 - 375);
     mapImg.style('z-index', '-1');
 
-    // ☕ 从 CSV 读取数据
+    // get data from cvs
     for (let r = 0; r < table.getRowCount(); r++) {
       const lat = table.getNum(r, 'Latitude');
       const lon = table.getNum(r, 'Longitude');
@@ -40,7 +39,7 @@ registerSketch('sk5', function (p) {
       points.push({ x, y, name });
     }
 
-    // 🔥 预计算每个点的密度
+    
     for (let i = 0; i < points.length; i++) {
       let density = 0;
       for (let j = 0; j < points.length; j++) {
@@ -52,7 +51,7 @@ registerSketch('sk5', function (p) {
       points[i].density = density;
     }
 
-    // 🔥 在 setup 中绘制热力图
+    // setup heatmap
     drawHeatmap();
   };
 
@@ -75,21 +74,21 @@ registerSketch('sk5', function (p) {
       }
     }
     
-    // ✨ 应用模糊滤镜
+   
     heatmapLayer.filter(p.BLUR, 12);
   }
 
   p.draw = function () {
     p.clear();
 
-    // 🔥 绘制热力图层（设置透明度并正确定位）
+    // heatmap
     p.push();
-    p.tint(255, 150); // ✅ 透明度 150/255 ≈ 60%
-    p.imageMode(p.CORNER); // ✅ 改为 CORNER 模式
-    p.image(heatmapLayer, 0, 0); // ✅ 从 (0,0) 开始绘制
+    p.tint(255, 150); 
+    p.imageMode(p.CORNER); 
+    p.image(heatmapLayer, 0, 0); 
     p.pop();
 
-    // ☕ 绘制咖啡杯图标
+    // coffee icon
     p.textSize(14);
     p.fill(0);
     for (let i = 0; i < points.length; i++) {
@@ -97,7 +96,7 @@ registerSketch('sk5', function (p) {
       p.text('☕', pt.x, pt.y);
     }
 
-    // 🎯 hover 检测和 tooltip
+    // hover & tooltip
     hoverIndex = -1;
     for (let i = 0; i < points.length; i++) {
       const pt = points[i];
@@ -121,7 +120,7 @@ registerSketch('sk5', function (p) {
       p.text(pt.name, pt.x, pt.y - 20);
     }
 
-    // 📝 标题和标签
+    // Titles and Tags
     p.fill(0);
     p.noStroke();
     p.textSize(18);

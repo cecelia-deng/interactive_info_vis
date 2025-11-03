@@ -58,7 +58,6 @@ canvas {
   border-radius: 12px;   
 }
 
-
 .sketch-evolution img {
   width: 250px;  
   height: auto;
@@ -66,4 +65,14 @@ canvas {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   display: block;
   margin: 8px auto; 
+}
+
+img[alt="Seoul Map"] {
+  filter: 
+    contrast(1.6) 
+    brightness(0.82) 
+    saturate(0.5)
+    drop-shadow(0 0 2px rgba(0, 0, 0, 0.7))
+    drop-shadow(0 0 4px rgba(0, 0, 0, 0.4));
+  opacity: 0.95;
 }
